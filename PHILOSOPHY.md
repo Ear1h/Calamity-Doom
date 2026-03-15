@@ -7,7 +7,7 @@ This document is descriptive, not proscriptive.
 
 # Vanilla behavior
 
-Ideally Chocolate Doom aims to recreate the behavior of the Vanilla
+Ideally Chocolate Doom aims to recreate the behavior of the Vanill
 binaries, but different aspects of Vanilla behavior are held to
 varying degrees of importance. It can be imagined as different “tiers”
 of compatibility:
