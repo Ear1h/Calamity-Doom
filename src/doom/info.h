@@ -23,7 +23,7 @@
 
 // Needed for action function pointer handling.
 #include "d_think.h"
-
+#define MAXSTATEARGS 8
 typedef enum
 {
     SPR_TROO,
@@ -1232,7 +1232,7 @@ typedef enum
     NUMSTATES = 4000
 } statenum_t;
 
-
+#define MF5_FASTSPEED 1
 typedef struct
 {
     spritenum_t sprite;
@@ -1243,6 +1243,8 @@ typedef struct
     statenum_t nextstate;
     int misc1;
     int misc2;
+    long args[MAXSTATEARGS];
+    int flags;
 } state_t;
 
 extern state_t	states[NUMSTATES];
@@ -1461,6 +1463,49 @@ typedef struct
     int minmissilechance;
     // [crispy] multiplier for likelihood of a missile attack (generaliz. for various)
     int missilechancemult;
+
+    // [calamity doom]]
+
+    // Sets the number of ticks after the actor wakes up before it fires
+    int nightmarereaction;
+
+    // Sets the speed to -fast and Nightmare
+    int fastspeed;
+
+    // New flags
+    int flags2;
+
+    // New flags
+    int flags3;
+
+    // Generic flags is intended to be installed via the builder
+    int genericflags;
+   
+    // Counters
+    int counter1;
+    int counter1max;
+
+    int counter2;
+    int counter2max;
+
+    int counter3;
+    int counter3max;
+
+    int counter4;
+    int counter4max;
+
+    // Sets the dice roll for projectiles 
+    int damagedice;
+
+    // Sets crush state after crush
+    int crushstate;
+
+    // Print death logs from inflictors
+    const char *obituary, *meleeobituary;
+
+    int respawntics;
+
+    int respawndice;
 
 } mobjinfo_t;
 

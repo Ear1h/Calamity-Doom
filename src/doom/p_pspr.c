@@ -42,6 +42,8 @@
 #define WEAPONBOTTOM	128*FRACUNIT
 #define WEAPONTOP		32*FRACUNIT
 
+bool bAltFire;
+
 // [crispy] weapon recoil pitch values
 static const int recoil_values[] = {
    0, // wp_fist
@@ -287,12 +289,26 @@ void P_FireWeapon (player_t* player)
     if (!P_CheckAmmo (player))
 	return;
 	
-    P_SetMobjState (player->mo, S_PLAY_ATK1);
+    bAltFire = false;
+    P_SetMobjState(player->mo, S_PLAY_ATK1);
     newstate = weaponinfo[player->readyweapon].atkstate;
-    P_SetPsprite (player, ps_weapon, newstate);
+    P_SetPsprite(player, ps_weapon, newstate);
     P_NoiseAlert (player->mo, player->mo);
 }
 
+void P_AltFireWeapon(player_t *player)
+{
+    statenum_t newstate;
+    if (!P_CheckAmmo(player) ||
+        weaponinfo[player->readyweapon].altstate == S_NULL)
+        return;
+
+    bAltFire = true;
+    P_SetMobjState(player->mo, S_PLAY_ATK1);
+    newstate = weaponinfo[player->readyweapon].altstate;
+    P_SetPsprite(player, ps_weapon, newstate);
+    P_NoiseAlert(player->mo, player->mo);
+}
 
 
 //
@@ -353,15 +369,24 @@ A_WeaponReady
     //  the missile launcher and bfg do not auto fire
     if (player->cmd.buttons & BT_ATTACK)
     {
-	if ( !player->attackdown
-	     || (player->readyweapon != wp_missile
-		 && player->readyweapon != wp_bfg) )
-	{
-	    player->attackdown = true;
-	    P_FireWeapon (player);		
-	    return;
-	}
+        if (!player->attackdown || (player->readyweapon != wp_missile &&
+                                    player->readyweapon != wp_bfg))
+        {
+            player->attackdown = true;
+            P_FireWeapon(player);
+            return;
+        }
     }
+    else if (player->cmd.buttons3 & BT3_ALTFIRE)
+    {
+        if (!player->attackdown)
+        {
+            player->attackdown = true;
+            P_AltFireWeapon(player);
+            return;
+        }
+    }
+
     else
 	player->attackdown = false;
     
@@ -394,6 +419,12 @@ void A_ReFire
     {
 	player->refire++;
 	P_FireWeapon (player);
+    }
+    else if ((player->cmd.buttons3 & BT3_ALTFIRE) && bAltFire &&
+             player->pendingweapon == wp_nochange && player->health)
+    {
+        player->refire++;
+        P_AltFireWeapon(player);
     }
     else
     {
@@ -499,8 +530,14 @@ A_GunFlash
   pspdef_t*	psp ) 
 {
     if (!player) return; // [crispy] let pspr action pointers get called from mobj states
-    P_SetMobjState (player->mo, S_PLAY_ATK2);
-    P_SetPsprite (player,ps_flash,weaponinfo[player->readyweapon].flashstate);
+    P_SetMobjState(player->mo, S_PLAY_ATK2);
+    if (bAltFire)
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].altflashstate);
+        return;
+    }
+    P_SetPsprite(player, ps_flash, weaponinfo[player->readyweapon].flashstate);
 }
 
 

@@ -44,6 +44,9 @@ typedef struct
 
     byte buttons2;
     int inventory;
+
+    // Calamity
+    byte buttons3;
    
     // Heretic/Hexen specific:
 

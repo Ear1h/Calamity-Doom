@@ -1139,6 +1139,7 @@ static const struct
     {"Final Doom",           "final",      exe_final},
     {"Final Doom (alt)",     "final2",     exe_final2},
     {"Chex Quest",           "chex",       exe_chex},
+    {"Calamity Doom",        "calamity",   exe_calamity},
     { NULL,                  NULL,         0},
 };
 
@@ -1241,6 +1242,8 @@ static void InitGameVersion(void)
                         case 109:
                             gameversion = exe_doom_1_9;
                             break;
+                        case 120:
+                            gameversion = exe_calamity;
                         default:
                             status = false;
                             break;

@@ -471,6 +471,8 @@ static default_t	doom_defaults_list[] =
 
     CONFIG_VARIABLE_INT(mouseb_fire),
 
+    CONFIG_VARIABLE_INT(mouseb_altfire),
+
     //!
     // Mouse button to turn on strafing.  When held down, the player
     // will strafe left and right instead of turning left and right.

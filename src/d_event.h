@@ -134,6 +134,10 @@ typedef enum
   
 } buttoncode2_t;
 
+typedef enum
+{
+    BT3_ALTFIRE = 1,
+} buttoncode3_t;
 
 // [crispy] For fast polling
 extern event_t fastmouse;

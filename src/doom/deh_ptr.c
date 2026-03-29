@@ -62,7 +62,14 @@ static void DEH_PointerInit(void)
 	states[i].nextstate = i;
 	states[i].misc1 = 0;
 	states[i].misc2 = 0;
-//	states[i].dehacked = false;
+    states[i].args[0] = 0;
+    states[i].args[1] = 0;
+    states[i].args[2] = 0;
+    states[i].args[3] = 0;
+    states[i].args[4] = 0;
+    states[i].args[5] = 0;
+    states[i].args[6] = 0;
+    states[i].args[7] = 0;
 	codeptrs[i] = states[i].action;
     }
 }

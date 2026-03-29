@@ -109,6 +109,39 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   DEH_MAPPING("Min missile chance",  minmissilechance)
   // [crispy] Multiplies the chance of firing a missile (65536 = normal chance)
   DEH_MAPPING("Missile chance multiplier",  missilechancemult)
+
+  // Sets the number of ticks after the actor wakes up before it fires
+  DEH_MAPPING("Nightmare reaction", nightmarereaction)
+  // Sets the speed to -fast and Nightmare
+  DEH_MAPPING("Fast speed", fastspeed)
+  // New flags
+  DEH_MAPPING("CalamityBits", flags2)
+
+  DEH_MAPPING("CalamityBits2", flags3)
+  // Generic flags is intended to be installed via the builder
+  DEH_MAPPING("Generic Flags", genericflags)
+  // Counters
+  DEH_MAPPING("Counter 1", counter1)
+  DEH_MAPPING("Max counter 1", counter1max)
+  DEH_MAPPING("Counter 2", counter2)
+  DEH_MAPPING("Max counter 2", counter2max)
+  DEH_MAPPING("Counter 3", counter3)
+  DEH_MAPPING("Max counter 3", counter3max)
+  DEH_MAPPING("Counter 4", counter4)
+  DEH_MAPPING("Max counter 4", counter4max)
+  // Sets the dice roll for projectiles 
+  DEH_MAPPING("Damage dice", damagedice)
+
+  DEH_MAPPING("Crush state", crushstate)
+
+  DEH_UNSUPPORTED_MAPPING("Obituary", obituary)
+
+  DEH_UNSUPPORTED_MAPPING("Melee obituary", meleeobituary)
+
+  DEH_MAPPING("Respawn tics", respawntics)
+
+  DEH_MAPPING("Respawn dice", respawndice)
+
 DEH_END_MAPPING
 
 // [crispy] initialize Thing extra properties (keeping vanilla props in info.c)

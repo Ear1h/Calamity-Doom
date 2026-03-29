@@ -412,6 +412,10 @@ static void OtherKeysDialog(TXT_UNCAST_ARG(widget), TXT_UNCAST_ARG(unused))
     AddKeyControl(table, "- to player 3",         &key_multi_msgplayer[2]);
     AddKeyControl(table, "- to player 4",         &key_multi_msgplayer[3]);
 
+    AddSectionLabel(table, "new", true);
+
+    AddKeyControl(window, "AltFire/Attack", &key_altfire);
+
     if (gamemission == hexen || gamemission == strife)
     {
         AddKeyControl(table, "- to player 5",     &key_multi_msgplayer[4]);
