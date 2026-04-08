@@ -1060,6 +1060,22 @@ P_CrossSpecialLinePtr
 	// Raise Floor Turbo
 	EV_DoFloor(line,raiseFloorTurbo);
 	break;
+	  
+		case 4097:
+	// Set automap flags W1
+			EV_DoAutomapSet(line, side);
+			line->special = 0;
+			break;
+		case 4098:
+			EV_DoAutomapSet(line, side);
+			break;
+		case 4099:
+			EV_DoAutomapUnSet(line, side);
+			line->special = 0;
+			break;
+		case 4100:
+			EV_DoAutomapUnSet(line, side);
+			break;
     }
 }
 
@@ -1710,4 +1726,58 @@ void P_SpawnSpecials (void)
 
     // UNUSED: no horizonal sliders.
     //	P_InitSlidingDoorFrames();
+}
+
+int EV_DoAutomapSet(line_t *line, int side)
+{
+    int automap = side ? line->backautomap : line->frontautomap;
+
+	for (int l = 0; l < numlines; l++)
+	{
+        if (lines[l].tag == line->tag &&
+                !(lines[l].frontautomap || lines[l].backautomap))
+		{
+			switch (automap)
+			{
+				case 0:
+					break;
+				case AUTO_SECRET:
+					lines[l].flags |= ML_SECRET;
+					break;
+				case AUTO_DONTDRAW:
+					lines[l].flags |= ML_DONTDRAW;
+					break;
+				case AUTO_MAPPED:
+					lines[l].flags |= ML_MAPPED;
+					break;
+			}
+		}
+	}
+}
+
+int EV_DoAutomapUnSet(line_t *line, int side)
+{
+    int automap = side ? line->backautomap : line->frontautomap;
+
+    for (int l = 0; l < numlines; l++)
+    {
+        if (lines[l].tag == line->tag &&
+            !(lines[l].frontautomap || lines[l].backautomap))
+        {
+            switch (automap)
+            {
+                case 0:
+                    break;
+                case AUTO_SECRET:
+                    lines[l].flags &= ~ML_SECRET;
+                    break;
+                case AUTO_DONTDRAW:
+                    lines[l].flags &= ~ML_DONTDRAW;
+                    break;
+                case AUTO_MAPPED:
+                    lines[l].flags &= ~ML_MAPPED;
+                    break;
+            }
+        }
+    }
 }
