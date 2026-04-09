@@ -1032,7 +1032,10 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	
 	// [crispy] laser spot does not shoot any line
 	if (li->special && la_damage > INT_MIN)
-	    P_ShootSpecialLine (shootthing, li);
+        {
+            int side = P_PointOnLineSide(shootthing->x, shootthing->y, li);
+            P_ShootSpecialLine(shootthing, li, side);
+        }
 
 	if ( !(li->flags & ML_TWOSIDED) )
 	    goto hitline;

@@ -435,9 +435,9 @@ void P_LoadNodes (int lump)
     mapnode_t*	mn;
     node_t*	no;
 	
-    numnodes = W_LumpLength (lump) / sizeof(mapnode_t);
-    nodes = Z_Malloc (numnodes*sizeof(node_t),PU_LEVEL,0);	
-    data = W_CacheLumpNum (lump,PU_STATIC);
+    numnodes = W_LumpLength(lump) / sizeof(mapnode_t);
+    nodes = Z_Malloc(numnodes * sizeof(node_t), PU_LEVEL, 0);
+    data = W_CacheLumpNum(lump, PU_STATIC);
 	
     // [crispy] warn about missing nodes
     if (!data || !numnodes)
@@ -481,7 +481,7 @@ void P_LoadNodes (int lump)
 	}
     }
 	
-    W_ReleaseLumpNum(lump);
+    Z_Free(data);
 }
 
 
@@ -490,15 +490,12 @@ void P_LoadNodes (int lump)
 //
 void P_LoadThings (int lump)
 {
-    byte               *data;
-    int			i;
     mapthing_t         *mt;
     mapthing_t          spawnthing;
-    int			numthings;
     boolean		spawn;
 
-    data = W_CacheLumpNum (lump,PU_STATIC);
-    numthings = W_LumpLength (lump) / sizeof(mapthing_t);
+    int i, numthings = W_LumpLength(lump) / sizeof(mapthing_t);
+    byte *data = W_CacheLumpNum(lump, PU_STATIC);
 	
     mt = (mapthing_t *)data;
     for (i=0 ; i<numthings ; i++, mt++)
@@ -549,7 +546,7 @@ void P_LoadThings (int lump)
         }
     }
 
-    W_ReleaseLumpNum(lump);
+    Z_Free(data);
 }
 
 
@@ -561,174 +558,316 @@ void P_LoadLineDefs (int lump)
 {
     byte*		data;
     int			i;
-    maplinedef_t*	mld;
-    line_t*		ld;
-    vertex_t*		v1;
-    vertex_t*		v2;
     int warn, warn2; // [crispy] warn about invalid linedefs
 	
-    numlines = W_LumpLength (lump) / sizeof(maplinedef_t);
-    lines = Z_Malloc (numlines*sizeof(line_t),PU_LEVEL,0);	
-    memset (lines, 0, numlines*sizeof(line_t));
-    data = W_CacheLumpNum (lump,PU_STATIC);
+     numlines = W_LumpLength(lump) / sizeof(maplinedef_t);
+    lines = Z_Malloc(numlines * sizeof(line_t), PU_LEVEL, 0);
+    memset(lines, 0, numlines * sizeof(line_t));
+    data = W_CacheLumpNum(lump, PU_STATIC);
 	
-    mld = (maplinedef_t *)data;
-    ld = lines;
     warn = warn2 = 0; // [crispy] warn about invalid linedefs
-    for (i=0 ; i<numlines ; i++, mld++, ld++)
+    for (i=0 ; i<numlines ; i++)
     {
-	ld->flags = (unsigned short)SHORT(mld->flags); // [crispy] extended nodes
-	ld->special = SHORT(mld->special);
-	// [crispy] warn about unknown linedef types
-	if ((unsigned short) ld->special > 141 && ld->special != 271 && ld->special != 272)
-	{
-	    fprintf(stderr, "P_LoadLineDefs: Unknown special %d at line %d.\n", ld->special, i);
-	    warn++;
-	}
-	ld->tag = SHORT(mld->tag);
-	// [crispy] warn about special linedefs without tag
-	if (ld->special && !ld->tag)
-	{
-	    switch (ld->special)
+        maplinedef_t *mld = (maplinedef_t *) data + i;
+        line_t *ld = lines + i;
+        vertex_t *v1, *v2;
+
+	    ld->flags = (unsigned short)SHORT(mld->flags); // [crispy] extended nodes
+	    ld->special = SHORT(mld->special);
+
+	    // [crispy] warn about unknown linedef types
+	    if ((unsigned short) ld->special > 141 && ld->special != 271 && ld->special != 272)
 	    {
-		case 1:	// Vertical Door
-		case 26:	// Blue Door/Locked
-		case 27:	// Yellow Door /Locked
-		case 28:	// Red Door /Locked
-		case 31:	// Manual door open
-		case 32:	// Blue locked door open
-		case 33:	// Red locked door open
-		case 34:	// Yellow locked door open
-		case 117:	// Blazing door raise
-		case 118:	// Blazing door open
-		case 271:	// MBF sky transfers
-		case 272:
-		case 48:	// Scroll Wall Left
-		case 85:	// [crispy] [JN] (Boom) Scroll Texture Right
-		case 11:	// s1 Exit level
-		case 51:	// s1 Secret exit
-		case 52:	// w1 Exit level
-		case 124:	// w1 Secret exit
-		    break;
-		default:
-		    fprintf(stderr, "P_LoadLineDefs: Special linedef %d without tag.\n", i);
-		    warn2++;
-		    break;
+	        fprintf(stderr, "P_LoadLineDefs: Unknown special %d at line %d.\n", ld->special, i);
+	        warn++;
 	    }
-	}
-	v1 = ld->v1 = &vertexes[(unsigned short)SHORT(mld->v1)]; // [crispy] extended nodes
-	v2 = ld->v2 = &vertexes[(unsigned short)SHORT(mld->v2)]; // [crispy] extended nodes
-	ld->dx = v2->x - v1->x;
-	ld->dy = v2->y - v1->y;
+	    ld->tag = SHORT(mld->tag);
+	    // [crispy] warn about special linedefs without tag
+	    if (ld->special && !ld->tag)
+	    {
+	        switch (ld->special)
+	        {
+		        case 1:	// Vertical Door
+		        case 26:	// Blue Door/Locked
+		        case 27:	// Yellow Door /Locked
+		        case 28:	// Red Door /Locked
+		        case 31:	// Manual door open
+		        case 32:	// Blue locked door open
+		        case 33:	// Red locked door open
+		        case 34:	// Yellow locked door open
+		        case 117:	// Blazing door raise
+		        case 118:	// Blazing door open
+		        case 271:	// MBF sky transfers
+		        case 272:
+		        case 48:	// Scroll Wall Left
+		        case 85:	// [crispy] [JN] (Boom) Scroll Texture Right
+		        case 11:	// s1 Exit level
+		        case 51:	// s1 Secret exit
+		        case 52:	// w1 Exit level
+		        case 124:	// w1 Secret exit
+		            break;
+		        default:
+		            fprintf(stderr, "P_LoadLineDefs: Special linedef %d without tag.\n", i);
+		            warn2++;
+		            break;
+	        }
+	    }
+
+	    v1 = ld->v1 = &vertexes[(unsigned short)SHORT(mld->v1)]; // [crispy] extended nodes
+	    v2 = ld->v2 = &vertexes[(unsigned short)SHORT(mld->v2)]; // [crispy] extended nodes
+	    ld->dx = v2->x - v1->x;
+	    ld->dy = v2->y - v1->y;
 	
-	if (!ld->dx)
-	    ld->slopetype = ST_VERTICAL;
-	else if (!ld->dy)
-	    ld->slopetype = ST_HORIZONTAL;
-	else
-	{
-	    if (FixedDiv (ld->dy , ld->dx) > 0)
-		ld->slopetype = ST_POSITIVE;
+	    if (!ld->dx)
+	        ld->slopetype = ST_VERTICAL;
+	    else if (!ld->dy)
+	        ld->slopetype = ST_HORIZONTAL;
 	    else
-		ld->slopetype = ST_NEGATIVE;
-	}
+	    {
+	        if (FixedDiv (ld->dy , ld->dx) > 0)
+		    ld->slopetype = ST_POSITIVE;
+	        else
+		    ld->slopetype = ST_NEGATIVE;
+	    }
 		
-	if (v1->x < v2->x)
-	{
-	    ld->bbox[BOXLEFT] = v1->x;
-	    ld->bbox[BOXRIGHT] = v2->x;
-	}
-	else
-	{
-	    ld->bbox[BOXLEFT] = v2->x;
-	    ld->bbox[BOXRIGHT] = v1->x;
-	}
+	    if (v1->x < v2->x)
+	    {
+	        ld->bbox[BOXLEFT] = v1->x;
+	        ld->bbox[BOXRIGHT] = v2->x;
+	    }
+	    else
+	    {
+	        ld->bbox[BOXLEFT] = v2->x;
+	        ld->bbox[BOXRIGHT] = v1->x;
+	    }
 
-	if (v1->y < v2->y)
-	{
-	    ld->bbox[BOXBOTTOM] = v1->y;
-	    ld->bbox[BOXTOP] = v2->y;
-	}
-	else
-	{
-	    ld->bbox[BOXBOTTOM] = v2->y;
-	    ld->bbox[BOXTOP] = v1->y;
-	}
+	    if (v1->y < v2->y)
+	    {
+	        ld->bbox[BOXBOTTOM] = v1->y;
+	        ld->bbox[BOXTOP] = v2->y;
+	    }
+	    else
+	    {
+	        ld->bbox[BOXBOTTOM] = v2->y;
+	        ld->bbox[BOXTOP] = v1->y;
+	    }
 
-	// [crispy] calculate sound origin of line to be its midpoint
-	ld->soundorg.x = ld->bbox[BOXLEFT] / 2 + ld->bbox[BOXRIGHT] / 2;
-	ld->soundorg.y = ld->bbox[BOXTOP] / 2 + ld->bbox[BOXBOTTOM] / 2;
+	    // [crispy] calculate sound origin of line to be its midpoint
+	    ld->soundorg.x = ld->bbox[BOXLEFT] / 2 + ld->bbox[BOXRIGHT] / 2;
+	    ld->soundorg.y = ld->bbox[BOXTOP] / 2 + ld->bbox[BOXBOTTOM] / 2;
 
-	ld->sidenum[0] = SHORT(mld->sidenum[0]);
-	ld->sidenum[1] = SHORT(mld->sidenum[1]);
+	    ld->sidenum[0] = SHORT(mld->sidenum[0]);
+	    ld->sidenum[1] = SHORT(mld->sidenum[1]);
 
-	// [crispy] substitute dummy sidedef for missing right side
-	if (ld->sidenum[0] == NO_INDEX)
-	{
-	    ld->sidenum[0] = 0;
-	    fprintf(stderr, "P_LoadLineDefs: linedef %d without first sidedef!\n", i);
-	}
-
-	if (ld->sidenum[0] != NO_INDEX) // [crispy] extended nodes
-	    ld->frontsector = sides[ld->sidenum[0]].sector;
-	else
-	    ld->frontsector = 0;
-
-	if (ld->sidenum[1] != NO_INDEX) // [crispy] extended nodes
-	    ld->backsector = sides[ld->sidenum[1]].sector;
-	else
-	    ld->backsector = 0;
+        if (ld->sidenum[0] != NO_INDEX && ld->special)
+                sides[*ld->sidenum].special = ld->special;
     }
 
     // [crispy] warn about unknown linedef types
     if (warn)
     {
-	fprintf(stderr, "P_LoadLineDefs: Found %d line%s with unknown linedef type.\n", warn, (warn > 1) ? "s" : "");
+	    fprintf(stderr, "P_LoadLineDefs: Found %d line%s with unknown linedef type.\n", warn, (warn > 1) ? "s" : "");
     }
     // [crispy] warn about special linedefs without tag
     if (warn2)
     {
-	fprintf(stderr, "P_LoadLineDefs: Found %d special linedef%s without tag.\n", warn2, (warn2 > 1) ? "s" : "");
+	    fprintf(stderr, "P_LoadLineDefs: Found %d special linedef%s without tag.\n", warn2, (warn2 > 1) ? "s" : "");
     }
     if (warn || warn2)
     {
-	fprintf(stderr, "THIS MAP MAY NOT WORK AS EXPECTED!\n");
+	    fprintf(stderr, "THIS MAP MAY NOT WORK AS EXPECTED!\n");
     }
 
-    W_ReleaseLumpNum(lump);
+    Z_Free(data);
 }
 
+void P_LoadLineDefs2(int lump)
+{
+    int i = numlines;
+    register line_t *ld = lines;
+    for (; i--; ld++)
+    {
+        // killough 11/98: fix common wad errors (missing sidedefs):
+        if (ld->sidenum[0] == -1)
+            ld->sidenum[0] =
+                0; // Substitute dummy sidedef for missing right side
+
+        if (ld->sidenum[1] == -1)
+            ld->flags &= ~ML_TWOSIDED; // Clear 2s flag for missing left side
+
+        if (ld->sidenum[0] != NO_INDEX) // [crispy] extended nodes
+            ld->frontsector = sides[ld->sidenum[0]].sector;
+        else
+            ld->frontsector = 0;
+
+        if (ld->sidenum[1] != NO_INDEX) // [crispy] extended nodes
+            ld->backsector = sides[ld->sidenum[1]].sector;
+        else
+            ld->backsector = 0;
+    }
+}
 
 //
 // P_LoadSideDefs
 //
-void P_LoadSideDefs (int lump)
+// killough 4/4/98: split into two functions
+
+void P_ProcessSideDefs(side_t *side, int i, char *bottomtexture,
+                       char *midtexture, char *toptexture)
 {
-    byte*		data;
-    int			i;
-    mapsidedef_t*	msd;
-    side_t*		sd;
-	
-    numsides = W_LumpLength (lump) / sizeof(mapsidedef_t);
-    sides = Z_Malloc (numsides*sizeof(side_t),PU_LEVEL,0);	
-    memset (sides, 0, numsides*sizeof(side_t));
-    data = W_CacheLumpNum (lump,PU_STATIC);
-	
-    msd = (mapsidedef_t *)data;
-    sd = sides;
-    for (i=0 ; i<numsides ; i++, msd++, sd++)
+    switch (side->special)
     {
-	sd->textureoffset = SHORT(msd->textureoffset)<<FRACBITS;
-	sd->rowoffset = SHORT(msd->rowoffset)<<FRACBITS;
-	sd->toptexture = R_TextureNumForName(msd->toptexture);
-	sd->bottomtexture = R_TextureNumForName(msd->bottomtexture);
-	sd->midtexture = R_TextureNumForName(msd->midtexture);
-	sd->sector = &sectors[SHORT(msd->sector)];
-	// [crispy] smooth texture scrolling
-	sd->basetextureoffset = sd->textureoffset;
+        case 2057:
+        case 2058:
+        case 2059:
+        case 2060:
+        case 2061:
+        case 2062:
+        case 2063:
+        case 2064:
+        case 2065:
+        case 2066:
+        case 2067:
+        case 2068:
+        case 2087:
+        case 2088:
+        case 2089:
+        case 2090:
+        case 2091:
+        case 2092:
+        case 2093:
+        case 2094:
+        case 2095:
+        case 2096:
+        case 2097:
+        case 2098: {
+            // All of the W1, WR, S1, SR, G1, GR activations can be triggered from
+            // the back sidedef (reading the front bottom texture) and triggered
+            // from the front sidedef (reading the front upper texture).
+            for (int j = 0; j < numlines; j++)
+            {
+                if (lines[j].sidenum[0] == i)
+                {
+                    // Back triggered
+                    if ((lines[j].backmusic =
+                             W_CheckNumForName(bottomtexture)) < 0)
+                    {
+                        lines[j].backmusic = 0;
+                        side->bottomtexture =
+                            R_TextureNumForName(bottomtexture);
+                    }
+                    else
+                    {
+                        side->bottomtexture = 0;
+                    }
+
+                    // Front triggered
+                    if ((lines[j].frontmusic = W_CheckNumForName(toptexture)) <
+                        0)
+                    {
+                        lines[j].frontmusic = 0;
+                        side->toptexture = R_TextureNumForName(toptexture);
+                    }
+                    else
+                    {
+                        side->toptexture = 0;
+                    }
+                }
+            }
+            side->midtexture = R_TextureNumForName(midtexture);
+            break;
+        }
+        case 4097:
+        case 4098:
+        case 4099:
+        case 4100:
+        {
+            // All of the W1, WR, S1, SR, G1, GR activations can be triggered from
+            // the back sidedef (reading the front bottom texture) and triggered
+            // from the front sidedef (reading the front upper texture).
+            for (int j = 0; j < numlines; j++)
+            {
+                if (lines[j].sidenum[0] == i)
+                {
+                    // Back triggered
+                    if (strcasecmp(bottomtexture, "SECRET") == 0)
+                        lines[j].backautomap = AUTO_SECRET;
+                    else if (strcasecmp(bottomtexture, "NODRAW") == 0)
+                        lines[j].backautomap = AUTO_DONTDRAW;
+                    else if (strcasecmp(bottomtexture, "MAPPED") == 0)
+                        lines[j].backautomap = AUTO_MAPPED;
+                    else
+                        lines[j].backautomap = 0;
+
+                    if (lines[j].backautomap != 0)
+                        side->bottomtexture = 0;
+                    else
+                        side->bottomtexture =
+                            R_TextureNumForName(bottomtexture);
+
+                    // Front triggered
+                    if (strcasecmp(toptexture, "SECRET") == 0)
+                        lines[j].frontautomap = AUTO_SECRET;
+                    else if (strcasecmp(toptexture, "NODRAW") == 0)
+                        lines[j].frontautomap = AUTO_DONTDRAW;
+                    else if (strcasecmp(toptexture, "MAPPED") == 0)
+                        lines[j].frontautomap = AUTO_MAPPED;
+                    else
+                        lines[j].frontautomap = 0;
+
+                    if (lines[j].frontautomap != 0)
+                        side->toptexture = 0;
+                    else
+                        side->toptexture =
+                            R_TextureNumForName(toptexture);
+                }
+            }
+            side->midtexture = R_TextureNumForName(midtexture);
+            break;
+        }
+
+        default: // normal cases
+            side->midtexture = R_TextureNumForName(midtexture);
+            side->toptexture = R_TextureNumForName(toptexture);
+            side->bottomtexture = R_TextureNumForName(bottomtexture);
+            break;
+    }
+}
+
+//
+// P_LoadSideDefs
+//
+void P_LoadSideDefs(int lump)
+{
+    numsides = W_LumpLength(lump) / sizeof(mapsidedef_t);
+    sides = Z_Malloc(numsides * sizeof(side_t), PU_LEVEL, 0);
+    memset(sides, 0, numsides * sizeof(side_t));
+   
+}
+void P_LoadSideDefs2(int lump)
+{
+    byte *data = W_CacheLumpNum(lump, PU_STATIC);
+    int i;
+    for (i=0 ; i<numsides ; i++)
+    {
+        register mapsidedef_t *msd = (mapsidedef_t *) data + i;
+        register side_t *sd = sides + i;
+        sd->textureoffset = SHORT(msd->textureoffset) << FRACBITS;
+        sd->rowoffset = SHORT(msd->rowoffset) << FRACBITS;
+	    sd->toptexture = R_TextureNumForName(msd->toptexture);
+	    sd->bottomtexture = R_TextureNumForName(msd->bottomtexture);
+	    sd->midtexture = R_TextureNumForName(msd->midtexture);
+	    sd->sector = &sectors[SHORT(msd->sector)];
+	    // [crispy] smooth texture scrolling
+	    sd->basetextureoffset = sd->textureoffset;
+
+        // killough 4/4/98: allow sidedef texture names to be overloaded
+        // killough 4/11/98: refined to allow colormaps to work as wall
+        // textures if invalid as colormaps but valid as textures.
+        P_ProcessSideDefs(sd, i, msd->bottomtexture, msd->midtexture, msd->toptexture);
     }
 
-    W_ReleaseLumpNum(lump);
+   Z_Free(data);
 }
 
 
@@ -748,7 +887,7 @@ boolean P_LoadBlockMap (int lump)
         (lumplen = W_LumpLength(lump)) < 8 ||
         (count = lumplen / 2) >= 0x10000)
     {
-	return false;
+	    return false;
     }
 	
     // [crispy] remove BLOCKMAP limit
@@ -767,8 +906,8 @@ boolean P_LoadBlockMap (int lump)
   
     for (i=4; i<count; i++)
     {
-	short t = SHORT(wadblockmaplump[i]);
-	blockmaplump[i] = (t == -1) ? -1l : (int32_t) t & 0xffff;
+	    short t = SHORT(wadblockmaplump[i]);
+	    blockmaplump[i] = (t == -1) ? -1l : (int32_t) t & 0xffff;
     }
 
     Z_Free(wadblockmaplump);
@@ -791,131 +930,104 @@ boolean P_LoadBlockMap (int lump)
     return true;
 }
 
-
-
 //
 // P_GroupLines
 // Builds sector line lists and subsector sector numbers.
 // Finds block bounding boxes for sectors.
 //
+// killough 5/3/98: reformatted, cleaned up
+// killough 8/24/98: rewrote to use faster algorithm
+
+static void AddLineToSector(sector_t *s, line_t *l)
+{
+    M_AddToBox(s->blockbox, l->v1->x, l->v1->y);
+    M_AddToBox(s->blockbox, l->v2->x, l->v2->y);
+    *s->lines++ = l;
+}
+
 void P_GroupLines (void)
 {
-    line_t**		linebuffer;
-    int			i;
-    int			j;
-    line_t*		li;
-    sector_t*		sector;
-    subsector_t*	ss;
-    seg_t*		seg;
-    fixed_t		bbox[4];
-    int			block;
-	
+    int i, total;
+    line_t **linebuffer;
+
     // look up sector number for each subsector
-    ss = subsectors;
-    for (i=0 ; i<numsubsectors ; i++, ss++)
-    {
-	seg = &segs[ss->firstline];
-	ss->sector = seg->sidedef->sector;
-    }
+    for (i = 0; i < numsubsectors; i++)
+        subsectors[i].sector = segs[subsectors[i].firstline].sidedef->sector;
 
     // count number of lines in each sector
-    li = lines;
-    totallines = 0;
-    for (i=0 ; i<numlines ; i++, li++)
+    for (i = 0; i < numlines; i++)
     {
-	totallines++;
-	li->frontsector->linecount++;
-
-	if (li->backsector && li->backsector != li->frontsector)
-	{
-	    li->backsector->linecount++;
-	    totallines++;
-	}
+        lines[i].frontsector->linecount++;
+        if (lines[i].backsector && lines[i].backsector != lines[i].frontsector)
+            lines[i].backsector->linecount++;
     }
 
-    // build line tables for each sector	
-    linebuffer = Z_Malloc (totallines*sizeof(line_t *), PU_LEVEL, 0);
-
-    for (i=0; i<numsectors; ++i)
+    // compute total number of lines and clear bounding boxes
+    for (total = 0, i = 0; i < numsectors; i++)
     {
-        // Assign the line buffer for this sector
+        total += sectors[i].linecount;
+        M_ClearBox(sectors[i].blockbox);
+    }
 
+    // build line tables for each sector
+    linebuffer = Z_Malloc(total * sizeof(*linebuffer), PU_LEVEL, 0);
+
+    for (i = 0; i < numsectors; i++)
+    {
         sectors[i].lines = linebuffer;
         linebuffer += sectors[i].linecount;
-
-        // Reset linecount to zero so in the next stage we can count
-        // lines into the list.
-
-        sectors[i].linecount = 0;
     }
 
-    // Assign lines to sectors
-
-    for (i=0; i<numlines; ++i)
-    { 
-        li = &lines[i];
-
-        if (li->frontsector != NULL)
-        {
-            sector = li->frontsector;
-
-            sector->lines[sector->linecount] = li;
-            ++sector->linecount;
-        }
-
-        if (li->backsector != NULL && li->frontsector != li->backsector)
-        {
-            sector = li->backsector;
-
-            sector->lines[sector->linecount] = li;
-            ++sector->linecount;
-        }
+    for (i = 0; i < numlines; i++)
+    {
+        AddLineToSector(lines[i].frontsector, &lines[i]);
+        if (lines[i].backsector && lines[i].backsector != lines[i].frontsector)
+            AddLineToSector(lines[i].backsector, &lines[i]);
     }
     
     // Generate bounding boxes for sectors
 	
-    sector = sectors;
-    for (i=0 ; i<numsectors ; i++, sector++)
+    for (i = 0; i < numsectors; i++)
     {
-	M_ClearBox (bbox);
+        sector_t *sector = sectors + i;
+        int block;
+	    sector->lines -= sector->linecount;
 
-	for (j=0 ; j<sector->linecount; j++)
-	{
-            li = sector->lines[j];
-
-            M_AddToBox (bbox, li->v1->x, li->v1->y);
-            M_AddToBox (bbox, li->v2->x, li->v2->y);
-	}
-
-	// set the degenmobj_t to the middle of the bounding box
-	if (!crispy->soundfix)
-	{
-	sector->soundorg.x = (bbox[BOXRIGHT]+bbox[BOXLEFT])/2;
-	sector->soundorg.y = (bbox[BOXTOP]+bbox[BOXBOTTOM])/2;
-	}
-	else
-	{
-	// [crispy] Andrey Budko: fix sound origin for large levels
-	sector->soundorg.x = bbox[BOXRIGHT]/2+bbox[BOXLEFT]/2;
-	sector->soundorg.y = bbox[BOXTOP]/2+bbox[BOXBOTTOM]/2;
-	}
+	    // set the degenmobj_t to the middle of the bounding box
+	    if (!crispy->soundfix)
+	    {
+                sector->soundorg.x =
+                    (sector->blockbox[BOXRIGHT] + sector->blockbox[BOXLEFT]) /
+                    2;
+                sector->soundorg.y =
+                    (sector->blockbox[BOXTOP] + sector->blockbox[BOXBOTTOM]) /
+                    2;
+	    }
+	    else
+	    {
+	        // [crispy] Andrey Budko: fix sound origin for large levels
+                sector->soundorg.x = sector->blockbox[BOXRIGHT] / 2 +
+                                     sector->blockbox[BOXLEFT] / 2;
+                sector->soundorg.y = sector->blockbox[BOXTOP] / 2 +
+                                     sector->blockbox[BOXBOTTOM] / 2;
+	    }
 		
-	// adjust bounding box to map blocks
-	block = (bbox[BOXTOP]-bmaporgy+MAXRADIUS)>>MAPBLOCKSHIFT;
-	block = block >= bmapheight ? bmapheight-1 : block;
-	sector->blockbox[BOXTOP]=block;
+	    // adjust bounding box to map blocks
+	      block = (sector->blockbox[BOXTOP]-bmaporgy+MAXRADIUS)>>MAPBLOCKSHIFT;
+          block = block >= bmapheight ? bmapheight-1 : block;
+          sector->blockbox[BOXTOP]=block;
 
-	block = (bbox[BOXBOTTOM]-bmaporgy-MAXRADIUS)>>MAPBLOCKSHIFT;
-	block = block < 0 ? 0 : block;
-	sector->blockbox[BOXBOTTOM]=block;
+          block = (sector->blockbox[BOXBOTTOM]-bmaporgy-MAXRADIUS)>>MAPBLOCKSHIFT;
+          block = block < 0 ? 0 : block;
+          sector->blockbox[BOXBOTTOM]=block;
 
-	block = (bbox[BOXRIGHT]-bmaporgx+MAXRADIUS)>>MAPBLOCKSHIFT;
-	block = block >= bmapwidth ? bmapwidth-1 : block;
-	sector->blockbox[BOXRIGHT]=block;
+          block = (sector->blockbox[BOXRIGHT]-bmaporgx+MAXRADIUS)>>MAPBLOCKSHIFT;
+          block = block >= bmapwidth ? bmapwidth-1 : block;
+          sector->blockbox[BOXRIGHT]=block;
 
-	block = (bbox[BOXLEFT]-bmaporgx-MAXRADIUS)>>MAPBLOCKSHIFT;
-	block = block < 0 ? 0 : block;
-	sector->blockbox[BOXLEFT]=block;
+          block = (sector->blockbox[BOXLEFT]-bmaporgx-MAXRADIUS)>>MAPBLOCKSHIFT;
+          block = block < 0 ? 0 : block;
+          sector->blockbox[BOXLEFT]=block;
     }
 	
 }
@@ -1174,6 +1286,8 @@ P_SetupLevel
 	P_LoadLineDefs_Hexen (lumpnum+ML_LINEDEFS);
     else
     P_LoadLineDefs (lumpnum+ML_LINEDEFS);
+    P_LoadSideDefs2(lumpnum + ML_SIDEDEFS);
+    P_LoadLineDefs2(lumpnum + ML_LINEDEFS);
     // [crispy] (re-)create BLOCKMAP if necessary
     if (!crispy_validblockmap)
     {

@@ -35,6 +35,8 @@ extern int key_strafe;
 extern int key_speed;
 extern int key_demospeed;  // [crispy]
 
+extern int key_altfire;
+
 extern int key_jump;
 extern int key_toggleautorun;
 extern int key_togglenovert;
@@ -162,6 +164,8 @@ extern int mousebbackward;
 extern int mousebuse;
 extern int mousebmouselook;
 extern int mousebreverse;
+
+extern int mousebaltfire;
 
 extern int mousebprevweapon;
 extern int mousebnextweapon;

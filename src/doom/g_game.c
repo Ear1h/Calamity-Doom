@@ -742,6 +742,10 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
     if (gamekeydown[key_fire] || mousebuttons[mousebfire] 
 	|| joybuttons[joybfire]) 
 	cmd->buttons |= BT_ATTACK; 
+
+    if ((gamekeydown[key_altfire] || mousebuttons[mousebaltfire]) &&
+        gameversion == exe_calamity)
+        cmd->buttons3 |= BT3_ALTFIRE;
  
     if (gamekeydown[key_use]
      || joybuttons[joybuse]
@@ -3179,6 +3183,9 @@ int G_VanillaVersionCode(void)
         case exe_doom_1_8:
             return 108;
         case exe_doom_1_9:
+            return 109;
+        case exe_calamity:
+            return 120;
         default:  // All other versions are variants on v1.9:
             return 109;
     }
@@ -3269,6 +3276,8 @@ static const char *DemoVersionDescription(int version)
             return "v1.9";
         case 111:
             return "v1.91 hack demo?";
+        case 120:
+            return "CALAMITY DOOM???";
         default:
             break;
     }
@@ -3519,6 +3528,8 @@ static size_t WriteCmdLineLump(MEMFILE *stream)
         case exe_final:
             mem_fputs(" -complevel 4", stream);
             break;
+        case exe_calamity:
+            mem_fputs(" -complevel 27", stream);
         default:
             break;
     }

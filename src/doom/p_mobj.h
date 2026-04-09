@@ -209,6 +209,47 @@ typedef enum
 
 } mobjflag_t;
 
+typedef enum
+{
+    MF2_NORESPAWN = 1,
+
+    MF2_FULLVOLSOUNDS = 2,
+
+    MF2_NORADIUSDMG = 4,
+
+    MF2_ACTIVATOR = 8,
+
+    MF2_NODAMAGE = 16,
+
+    MF2_NOCRUSH = 32,
+
+    MF2_MONSTERPASS = 64,
+
+    MF2_ANTITELEFRAG = 128, 
+
+    MF2_SPAWNONLYNIGHTMARE = 256,
+
+    MF2_STAY = 512,
+
+    MF2_FLOORDAMAGE = 0x400,
+
+    MF2_RIP = 0x800,
+
+    MF2_DONTFALL = 0x1000,
+
+    MF2_NIGHTMAREMOBJ = 0x2000,
+
+    MF2_FLOORHUGGER = 0x4000
+} mobjflag2_t;
+
+typedef enum
+{
+    MF4_GENERIC1 = 1,
+    MF4_GENERIC2 = 2,
+    MF4_GENERIC3 = 4,
+    MF4_GENERIC4 = 8
+} mobjflaggeneric_t;
+
 
 // Map Object definition.
 typedef struct mobj_s
@@ -258,7 +299,9 @@ typedef struct mobj_s
     
     int			tics;	// state tic counter
     state_t*		state;
-    int			flags;
+    int flags;
+    int flags2;   //New flags2 to GAMEVERSION 2.0
+    int genericflags;
     int			health;
 
     // Movement direction, movement generation (zig-zagging).
@@ -300,6 +343,15 @@ typedef struct mobj_s
     fixed_t		oldz;
     angle_t		oldangle;
 
+    // Gameversion 2.0
+    int counter1;
+    int counter1max;
+    int counter2;
+    int counter2max;
+    int counter3;
+    int counter3max;
+    int counter4;
+    int counter4max;
 } mobj_t;
 
 

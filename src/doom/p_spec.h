@@ -51,10 +51,13 @@ P_UseSpecialLine
   line_t*	line,
   int		side );
 
+void EV_ChangeMusic(line_t *line, int side);
+
 void
 P_ShootSpecialLine
 ( mobj_t*	thing,
-  line_t*	line );
+  line_t*	line,
+    int side);
 
 void
 P_CrossSpecialLine
@@ -642,5 +645,9 @@ EV_Teleport
 ( line_t*	line,
   int		side,
   mobj_t*	thing );
+
+int EV_DoAutomapSet(line_t *line, int side);
+int EV_DoAutomapUnSet(line_t *line, int side);
+boolean EV_ClearForceFields(line_t *line);
 
 #endif

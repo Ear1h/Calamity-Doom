@@ -71,6 +71,8 @@ typedef enum
     exe_final2,      // Final Doom (alternate exe)
     exe_chex,        // Chex Quest executable (based on Final Doom)
 
+    exe_calamity,    // Calamity Doom
+
     exe_heretic_1_3, // Heretic 1.3
 
     exe_hexen_1_1,   // Hexen 1.1

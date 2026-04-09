@@ -133,6 +133,7 @@ static struct {
     { doom,     exe_final },
     { doom,     exe_final2 },
     { doom,     exe_chex },
+    { doom,     exe_calamity },
     { heretic,  exe_heretic_1_3 },
     { hexen,    exe_hexen_1_1 },
     { hexen,    exe_hexen_1_1r2 },

@@ -193,6 +193,12 @@ typedef struct
     
     // [crispy] smooth texture scrolling
     fixed_t	basetextureoffset;
+
+    // killough 4/4/98, 4/11/98: highest referencing special linedef's type,
+    // or lump number of special effect. Allows texture names to be overloaded
+    // for other functions.
+
+    int special;
 } side_t;
 
 
@@ -250,6 +256,13 @@ typedef struct line_s
 
     // [crispy] calculate sound origin of line to be its midpoint
     degenmobj_t	soundorg;
+
+    int frontautomap;
+    int backautomap;
+
+    int frontmusic;
+    int backmusic;
+
 } line_t;
 
 

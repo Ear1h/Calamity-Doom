@@ -62,6 +62,7 @@ static int *game_mouse_buttons[] = {
     &mousebinvuse, // [crispy]
     &mousebturnleft,
     &mousebturnright,
+    &mousebaltfire,
 };
 
 // [crispy]
@@ -246,6 +247,7 @@ void ConfigMouse(TXT_UNCAST_ARG(widget), void *user_data)
 
     AddMouseControl(window, "Fire/Attack", &mousebfire);
     AddMouseControl(window, "Use", &mousebuse);
+    AddMouseControl(window, "AltFire", &mousebaltfire);
 
     TXT_AddWidget(window,
                   TXT_NewButton2("More controls...", ConfigExtraButtons, NULL));

@@ -46,6 +46,8 @@ int key_demospeed = KEYP_PLUS; // [crispy]
 int key_toggleautorun = KEY_CAPSLOCK; // [crispy]
 int key_togglenovert = 0; // [crispy]
 
+int key_altfire = 'o';
+
 // 
 // Heretic keyboard controls
 //
@@ -116,6 +118,7 @@ int mousebfire = 0;
 int mousebstrafe = 1;
 int mousebforward = 2;
 int mousebspeed = 3;
+int mousebaltfire = 4;
 
 int mousebjump = -1;
 
@@ -271,6 +274,8 @@ void M_BindBaseControls(void)
     M_BindIntVariable("mouseb_strafe",      &mousebstrafe);
     M_BindIntVariable("mouseb_forward",     &mousebforward);
     M_BindIntVariable("mouseb_speed",       &mousebspeed);
+
+    M_BindIntVariable("mouseb_altfire",     &mousebaltfire);
 
     M_BindIntVariable("joyb_fire",          &joybfire);
     M_BindIntVariable("joyb_strafe",        &joybstrafe);
