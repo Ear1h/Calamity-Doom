@@ -574,7 +574,6 @@ void P_LoadLineDefs (int lump)
 
 	    ld->flags = (unsigned short)SHORT(mld->flags); // [crispy] extended nodes
 	    ld->special = SHORT(mld->special);
-        ld->intflags = 0;
 
 	    // [crispy] warn about unknown linedef types
 	    if ((unsigned short) ld->special > 141 && ld->special != 271 && ld->special != 272)
@@ -718,6 +717,66 @@ void P_ProcessSideDefs(side_t *side, int i, char *bottomtexture,
 {
     switch (side->special)
     {
+        case 2057:
+        case 2058:
+        case 2059:
+        case 2060:
+        case 2061:
+        case 2062:
+        case 2063:
+        case 2064:
+        case 2065:
+        case 2066:
+        case 2067:
+        case 2068:
+        case 2087:
+        case 2088:
+        case 2089:
+        case 2090:
+        case 2091:
+        case 2092:
+        case 2093:
+        case 2094:
+        case 2095:
+        case 2096:
+        case 2097:
+        case 2098: {
+            // All of the W1, WR, S1, SR, G1, GR activations can be triggered from
+            // the back sidedef (reading the front bottom texture) and triggered
+            // from the front sidedef (reading the front upper texture).
+            for (int j = 0; j < numlines; j++)
+            {
+                if (lines[j].sidenum[0] == i)
+                {
+                    // Back triggered
+                    if ((lines[j].backmusic =
+                             W_CheckNumForName(bottomtexture)) < 0)
+                    {
+                        lines[j].backmusic = 0;
+                        side->bottomtexture =
+                            R_TextureNumForName(bottomtexture);
+                    }
+                    else
+                    {
+                        side->bottomtexture = 0;
+                    }
+
+                    // Front triggered
+                    if ((lines[j].frontmusic = W_CheckNumForName(toptexture)) <
+                        0)
+                    {
+                        lines[j].frontmusic = 0;
+                        side->toptexture = R_TextureNumForName(toptexture);
+                    }
+                    else
+                    {
+                        side->toptexture = 0;
+                    }
+                }
+            }
+            side->midtexture = R_TextureNumForName(midtexture);
+            break;
+        }
         case 4097:
         case 4098:
         case 4099:

@@ -43,6 +43,7 @@
 #include "g_game.h"
 
 #include "s_sound.h"
+#include "s_musinfo.h"
 
 // State.
 #include "r_state.h"
@@ -567,7 +568,98 @@ P_FindMinSurroundingLight
     return min;
 }
 
+//
+// EV_ChangeMusic() -- ID24 Music Changers
+//
+// Generic solution for changing the currently playing music during play time.
+// There are four type of music changing behavior, all of them available in all
+// six major activation triggers (W1, WR, S1, SR, G1, GR) totalling 24 lines.
+// All specials can be triggered from either side of the line being activated.
+// Of the four categories, there are two conditions:
+//
+//  1. If the given music lump will loop or not
+//  2. If it will reset to the map's default when no music lump is defined
+//
+// Giving the four resulting categories:
+// * Change music and make it loop only if a track is defined.
+// * Change music and make it play only once and stop all music after.
+// * Change music and make it loop, reset to looping default if no track
+//    defined.
+// * Change music and make it play only once, reset to looping default if no
+//    track defined.
+//
 
+void EV_ChangeMusic(line_t *line, int side)
+{
+    boolean once = false;
+    boolean loops = false;
+    boolean resets = false;
+
+    int music = side ? line->backmusic : line->frontmusic;
+
+    switch (line->special)
+    {
+        case 2057:
+        case 2059:
+        case 2061:
+        case 2063:
+        case 2065:
+        case 2067:
+        case 2087:
+        case 2089:
+        case 2091:
+        case 2093:
+        case 2095:
+        case 2097:
+            once = true;
+            break;
+    }
+
+    switch (line->special)
+    {
+        case 2057:
+        case 2058:
+        case 2059:
+        case 2060:
+        case 2061:
+        case 2062:
+        case 2087:
+        case 2088:
+        case 2089:
+        case 2090:
+        case 2091:
+        case 2092:
+            loops = true;
+            break;
+    }
+
+    switch (line->special)
+    {
+        case 2087:
+        case 2088:
+        case 2089:
+        case 2090:
+        case 2091:
+        case 2092:
+        case 2093:
+        case 2094:
+        case 2095:
+        case 2096:
+        case 2097:
+        case 2098:
+            resets = true;
+            break;
+    }
+
+    if (music)
+        S_ChangeMusInfoMusic(music, loops);
+    else if (resets)
+        S_ChangeMusInfoMusic(musinfo.items[0],
+                             true); // Always loops when defaulting
+
+    if (once)
+        line->special = 0;
+}
 
 //
 // EVENTS
@@ -1060,6 +1152,18 @@ P_CrossSpecialLinePtr
 	// Raise Floor Turbo
 	EV_DoFloor(line,raiseFloorTurbo);
 	break;
+
+	 // ID24 Music Changers
+      case 2057:
+      case 2063:
+      case 2087:
+      case 2093:
+      case 2058:
+      case 2064:
+      case 2088:
+      case 2094:
+          EV_ChangeMusic(line, side);
+          break;
 	  
 		case 4097:
 	// Set automap flags W1
@@ -1088,7 +1192,8 @@ P_CrossSpecialLinePtr
 void
 P_ShootSpecialLine
 ( mobj_t*	thing,
-  line_t*	line )
+  line_t*	line, 
+  int side)
 {
     int		ok;
     
@@ -1126,6 +1231,21 @@ P_ShootSpecialLine
 	EV_DoPlat(line,raiseToNearestAndChange,0);
 	P_ChangeSwitchTexture(line,0);
 	break;
+      case 2061:
+      case 2067:
+      case 2091:
+      case 2097:
+          P_ChangeSwitchTexture(line, 0);
+          EV_ChangeMusic(line, side);
+          break;
+
+      case 2062:
+      case 2068:
+      case 2092:
+      case 2098:
+          P_ChangeSwitchTexture(line, 1);
+          EV_ChangeMusic(line, side);
+          break;
     }
 }
 
@@ -1781,3 +1901,45 @@ int EV_DoAutomapUnSet(line_t *line, int side)
         }
     }
 }
+
+//
+// EV_ClearForceFields
+//
+// villsa [STRIFE] new function
+//
+boolean EV_ClearForceFields(line_t *line)
+{
+    int secnum;
+    sector_t *sec;
+    int i;
+    line_t *secline;
+    boolean ret = false;
+
+    secnum = -1;
+
+    while ((secnum = P_FindSectorFromLineTag(line, secnum)) >= 0)
+    {
+        sec = &sectors[secnum];
+
+        line->special = 0;
+        ret = true;
+
+        // haleyjd 09/18/10: fixed to continue w/linecount == 0, not return
+        for (i = 0; i < sec->linecount; i++)
+        {
+            secline = sec->lines[i];
+            if (!(secline->flags & ML_TWOSIDED))
+                continue;
+            if (secline->special != 4105)
+                continue;
+
+            secline->flags &= ~ML_BLOCKING;
+            secline->special = 0;
+            sides[secline->sidenum[0]].midtexture = 0;
+            sides[secline->sidenum[1]].midtexture = 0;
+        }
+    }
+
+    return ret;
+}
+

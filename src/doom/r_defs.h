@@ -259,6 +259,10 @@ typedef struct line_s
 
     int frontautomap;
     int backautomap;
+
+    int frontmusic;
+    int backmusic;
+
 } line_t;
 
 

@@ -310,6 +310,7 @@ P_DamageMobj
   mobj_t*	source,
   int		damage );
 
+void P_Thrust(player_t *player, angle_t angle, fixed_t move);
 
 //
 // P_SPEC

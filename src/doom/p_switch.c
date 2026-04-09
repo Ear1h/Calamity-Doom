@@ -717,7 +717,56 @@ P_UseSpecialLine
 	EV_LightTurnOn(line,35);
 	P_ChangeSwitchTexture(line,1);
 	break;
-			
+
+	// ID24 Music Changers
+      case 2059:
+      case 2065:
+      case 2089:
+      case 2095:
+          P_ChangeSwitchTexture(line, 0);
+          EV_ChangeMusic(line, side);
+          return true;
+
+      case 2060:
+      case 2066:
+      case 2090:
+      case 2096:
+          P_ChangeSwitchTexture(line, 1);
+          EV_ChangeMusic(line, side);
+          return true;
+		
+		case 4101:
+          // Set automap flags S1
+          EV_DoAutomapSet(line, side);
+          P_ChangeSwitchTexture(line, 0);
+          break;
+      case 4102:
+          EV_DoAutomapSet(line, side);
+          P_ChangeSwitchTexture(line, 1);
+          break;
+      case 4103:
+          EV_DoAutomapUnSet(line, side);
+          P_ChangeSwitchTexture(line, 0);
+          break;
+      case 4104:
+          EV_DoAutomapUnSet(line, side);
+          P_ChangeSwitchTexture(line, 1);
+          break;
+	default:
+		if (gameversion == exe_calamity)
+			switch (line->special)
+			{
+				case 4105:
+					// haleyjd 09/16/10: [STRIFE] using forcefields hurts
+					P_DamageMobj(thing, NULL, NULL, 10);
+					P_Thrust(thing->player, thing->angle + ANG180, 125*FRACUNIT/16);
+					break;
+				case 4106:
+					if(EV_ClearForceFields(line))
+						P_ChangeSwitchTexture(line, 0);
+					break;
+			}
+		break;
     }
 	
     return true;
