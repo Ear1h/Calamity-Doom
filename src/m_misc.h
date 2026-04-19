@@ -61,6 +61,18 @@ boolean M_StringEndsWith(const char *s, const char *suffix);
 int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args);
 int M_snprintf(char *buf, size_t buf_len, const char *s, ...) PRINTF_ATTR(3, 4);
 void M_NormalizeSlashes(char *str);
+char M_ToUpper(const char c);
+void M_StringToUpper(char *text);
+typedef struct
+{
+    int major;
+    int minor;
+    int revision;
+} version_t;
+
+// Negative if v1 < v2, zero if equal, positive if v1 > v2.
+int M_CompareVersions(const version_t *v1, const version_t *v2);
+boolean M_ParseVersion(const char *s, version_t *v);
 
 
 // debugging code to check there are no loops in a linked list

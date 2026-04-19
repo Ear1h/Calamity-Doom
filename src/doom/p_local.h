@@ -317,5 +317,10 @@ void P_Thrust(player_t *player, angle_t angle, fixed_t move);
 //
 #include "p_spec.h"
 
+// P_ANIM
+
+void P_AnimateSurfaces(void);
+void P_ResetAnimatedSurfaces(void);
+
 
 #endif	// __P_LOCAL__

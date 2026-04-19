@@ -133,6 +133,7 @@ struct texture_s
 int		firstflat;
 int		lastflat;
 int		numflats;
+//static int missingflats;
 
 int		firstpatch;
 int		lastpatch;
@@ -1041,6 +1042,8 @@ void R_InitFlats (void)
     
     for (i=0 ; i<numflats ; i++)
 	flattranslation[i] = i;
+
+	//missingflats = R_FlatNumForName("-N0_TEX-");
 }
 
 
@@ -1320,8 +1323,6 @@ void R_InitData (void)
 #endif
 }
 
-
-
 //
 // R_FlatNumForName
 // Retrieval, get a flat number for a flat name.
@@ -1335,18 +1336,27 @@ int R_FlatNumForName(const char *name)
 
     if (i == -1)
     {
-	namet[8] = 0;
-	memcpy (namet, name,8);
-	// [crispy] make non-fatal
-	fprintf (stderr, "R_FlatNumForName: %s not found\n", namet);
-	// [crispy] since there is no "No Flat" marker,
-	// render missing flats as SKY
-	return skyflatnum;
+		namet[8] = 0;
+		memcpy (namet, name,8);
+		// [crispy] make non-fatal
+		fprintf (stderr, "R_FlatNumForName: %s not found\n", namet);
+		// [crispy] since there is no "No Flat" marker,
+		// render missing flats as SKY
+		return skyflatnum;
     }
     return i - firstflat;
 }
 
+//
+// R_CheckFlatNumForName
+// Retrieval, get a flat number for a flat name. No error.
+//
+int R_CheckFlatNumForName(const char *name)
+{
+    const int i = W_CheckNumForNameFromTo(firstflat, lastflat, name);
 
+    return (i >= 0 ? i - firstflat : -1);
+}
 
 
 //

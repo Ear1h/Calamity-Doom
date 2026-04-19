@@ -146,6 +146,8 @@ typedef PACKED_STRUCT (
 // Set if already seen, thus drawn in automap.
 #define ML_MAPPED		256
 
+#define ML_TRANSLUCENT 0x200
+
 #define AUTO_SECRET 1
 #define AUTO_DONTDRAW 2
 #define AUTO_MAPPED 4

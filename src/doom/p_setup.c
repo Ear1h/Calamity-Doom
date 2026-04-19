@@ -1243,7 +1243,9 @@ P_SetupLevel
     }
 
     lumpnum = W_GetNumForName (lumpname);
+
 */
+    //P_ResetAnimatedSurfaces();
     lumpnum = P_GetNumForMap (episode, map, true);
 	
     maplumpinfo = lumpinfo[lumpnum];
@@ -1369,7 +1371,9 @@ P_SetupLevel
 void P_Init (void)
 {
     P_InitSwitchList ();
+    P_ProcessAnimation();
     P_InitPicAnims ();
+    P_InitHexenAnims();
     R_InitSprites (sprnames);
 }
 

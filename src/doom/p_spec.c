@@ -39,11 +39,14 @@
 
 #include "r_local.h"
 #include "p_local.h"
+#include "p_anim.h"
 
 #include "g_game.h"
 
 #include "s_sound.h"
 #include "s_musinfo.h"
+#include "p_animdefs.h"
+#include "m_array.h"
 
 // State.
 #include "r_state.h"
@@ -64,7 +67,7 @@ typedef struct
     int		basepic;
     int		numpics;
     int		speed;
-    
+
 } anim_t;
 
 //
@@ -147,94 +150,159 @@ short numlinespecials;
 line_t *linespeciallist[MAXLINEANIMS];
 
 
+//
+// Adds a pic-anim for the given anim-def (Eternity)
+//
 
-void P_InitPicAnims (void)
+static void P_AddpicAnim(animdef_t animdef)
 {
-    int		i;
-    boolean init_swirl = false;
+    if (lastanim >= anims + maxanims)
+    {
+        size_t newmax = maxanims ? 2 * maxanims : MAXANIMS;
+        anims = I_Realloc(anims, newmax * sizeof(*anims));
+        lastanim = anims + maxanims;
+        maxanims = newmax;
+    }
 
-    // [crispy] add support for ANIMATED lumps
+	if (animdef.istexture)
+    {
+        // different episode ?
+        if (R_CheckTextureNumForName(animdef.startname) == -1)
+            return;
+
+        lastanim->picnum = R_TextureNumForName(animdef.endname);
+        lastanim->basepic = R_TextureNumForName(animdef.startname);
+    }
+    else
+    {
+        if (W_CheckNumForName(animdef.startname) == -1)
+            return;
+
+        lastanim->picnum = R_FlatNumForName(animdef.endname);
+        lastanim->basepic = R_FlatNumForName(animdef.startname);
+    }
+
+	lastanim->istexture = !!animdef.istexture;
+    lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
+    lastanim->speed = animdef.speed;
+
+	if (!lastanim->speed)
+    {
+            fprintf(stderr,
+                    "P_InitPicAnims: illegal speed 0 for animation %s to %s\n",
+                    animdef.startname, animdef.endname);
+    }
+
+	// SoM: just to make sure
+    if (lastanim->numpics <= 0)
+        return;
+
+	lastanim++;
+}
+
+static void P_AnimdefsAnims(p_animdefs_t *animdef)
+{
+    int startpic, endpic;
+    bool endgiven = false;
+
+	
+    if (animdef->type == 1)
+    {
+        // different episode ?
+        if (R_CheckTextureNumForName(animdef->startpic) == -1)
+            return;
+
+        endpic = R_TextureNumForName(animdef->endpic);
+        startpic = R_TextureNumForName(animdef->startpic);
+        endgiven = true;
+    }
+    else
+    {
+        if (W_CheckNumForName(animdef->startpic) == -1)
+            return;
+
+        endpic = R_FlatNumForName(animdef->endpic);
+        startpic = R_FlatNumForName(animdef->startpic);
+        endgiven = true;
+    }
+   
+
+    if (endgiven && endpic - startpic + 1 <= 0)
+        return; // another invalid case
+
+    anim_t *anim;
+    for (anim = anims; anim != lastanim; ++anim)
+    {
+        if (anim->basepic == startpic &&
+            anim->istexture == (animdef->type == 1))
+        {
+            break;
+        }
+    }
+    if (anim == lastanim)
+    {
+        if (!endgiven || animdef->tics <= 0)
+            return;
+
+        if (lastanim >= anims + maxanims)
+        {
+            size_t newmax = maxanims ? maxanims * 2 : MAXANIMS;
+            anims = I_Realloc(anims, newmax * sizeof(*anims));
+            lastanim = anims + maxanims;
+            maxanims = newmax;
+        }
+        anim = lastanim++;
+    }
+    else if (!endgiven)
+    {
+        endpic = anim->picnum;
+        if (endpic - startpic + 1 <= 0)
+            return;
+        endgiven = true;
+    }
+    anim->picnum = !endgiven ? startpic : endpic;
+    anim->basepic = startpic;
+    anim->istexture = animdef->type == 1;
+    anim->numpics = anim->picnum - anim->basepic + 1;
+    if (animdef->tics > 0)
+        anim->speed = animdef->tics;
+
+}
+
+void P_InitPicAnims(void)
+{
     animdef_t *animdefs;
+
     const boolean from_lump = (W_CheckNumForName("ANIMATED") != -1);
 
     if (from_lump)
     {
-	animdefs = W_CacheLumpName("ANIMATED", PU_STATIC);
+        animdefs = W_CacheLumpName("ANIMATED", PU_STATIC);
     }
     else
     {
-	animdefs = animdefs_vanilla;
+        animdefs = animdefs_vanilla;
     }
-    
+
     //	Init animation
     lastanim = anims;
-    for (i=0 ; animdefs[i].istexture != -1 ; i++)
+    for (int i = 0; animdefs[i].istexture != -1; i++)
     {
-        const char *startname, *endname;
-
-	// [crispy] remove MAXANIMS limit
-	if (lastanim >= anims + maxanims)
-	{
-	    size_t newmax = maxanims ? 2 * maxanims : MAXANIMS;
-	    anims = I_Realloc(anims, newmax * sizeof(*anims));
-	    lastanim = anims + maxanims;
-	    maxanims = newmax;
-	}
-
-        startname = DEH_String(animdefs[i].startname);
-        endname = DEH_String(animdefs[i].endname);
-
-	if (animdefs[i].istexture)
-	{
-	    // different episode ?
-	    if (R_CheckTextureNumForName(startname) == -1)
-		continue;	
-
-	    lastanim->picnum = R_TextureNumForName(endname);
-	    lastanim->basepic = R_TextureNumForName(startname);
-	}
-	else
-	{
-	    if (W_CheckNumForName(startname) == -1)
-		continue;
-
-	    lastanim->picnum = R_FlatNumForName(endname);
-	    lastanim->basepic = R_FlatNumForName(startname);
-	}
-
-	lastanim->istexture = animdefs[i].istexture;
-	lastanim->numpics = lastanim->picnum - lastanim->basepic + 1;
-	lastanim->speed = from_lump ? LONG(animdefs[i].speed) : animdefs[i].speed;
-
-	// [crispy] add support for SMMU swirling flats
-	if (lastanim->speed > 65535 || lastanim->numpics == 1)
-	{
-		init_swirl = true;
-	}
-	else
-	if (lastanim->numpics < 2)
-	{
-	    // [crispy] make non-fatal, skip invalid animation sequences
-	    fprintf (stderr, "P_InitPicAnims: bad cycle from %s to %s\n",
-		     startname, endname);
-	    continue;
-	}
-	
-	lastanim++;
-    }
-	
-    if (from_lump)
-    {
-	W_ReleaseLumpName("ANIMATED");
+        P_AddpicAnim(animdefs[i]);
     }
 
-    if (init_swirl)
+	if (from_lump)
     {
-	R_InitDistortedFlats();
+        W_ReleaseLumpName("ANIMATED");
+    }
+
+	for (int i = 0; i < array_size(animations); i++)
+    {
+		if (array_size(animations->pic) >= 1)
+			continue;
+        P_AnimdefsAnims(&animations[i]);
     }
 }
-
-
 
 //
 // UTILITIES
@@ -1377,22 +1445,22 @@ void P_UpdateSpecials (void)
     //	ANIMATE FLATS AND TEXTURES GLOBALLY
     for (anim = anims ; anim < lastanim ; anim++)
     {
-	for (i=anim->basepic ; i<anim->basepic+anim->numpics ; i++)
-	{
-	    pic = anim->basepic + ( (leveltime/anim->speed + i)%anim->numpics );
-	    if (anim->istexture)
-		texturetranslation[i] = pic;
-	    else
-	    {
-		// [crispy] add support for SMMU swirling flats
-		if (anim->speed > 65535 || anim->numpics == 1)
+		for (i=anim->basepic ; i<anim->basepic+anim->numpics ; i++)
 		{
-		    flattranslation[i] = -1;
+			pic = anim->basepic + ( (leveltime/anim->speed + i)%anim->numpics );
+			if (anim->istexture)
+				texturetranslation[i] = pic;
+			else
+			{
+				// [crispy] add support for SMMU swirling flats
+				if (anim->speed > 65535 || anim->numpics == 1)
+				{
+					flattranslation[i] = -1;
+				}
+				else
+					flattranslation[i] = pic;
+			}
 		}
-		else
-		flattranslation[i] = pic;
-	    }
-	}
     }
 
     

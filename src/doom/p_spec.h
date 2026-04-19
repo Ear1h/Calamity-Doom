@@ -23,13 +23,11 @@
 #ifndef __P_SPEC__
 #define __P_SPEC__
 
-
 //
 // End-level timer (-TIMER option)
 //
 extern	boolean levelTimer;
-extern	int	levelTimeCount;
-
+extern int levelTimeCount;
 
 //      Define values for map objects
 #define MO_TELEPORTMAN          14
@@ -37,6 +35,8 @@ extern	int	levelTimeCount;
 
 // at game start
 void    P_InitPicAnims (void);
+void    P_Init(void);
+void    P_ProcessAnimation(void);
 
 // at map load
 void    P_SpawnSpecials (void);
@@ -239,6 +239,18 @@ typedef struct
     int		btexture;
     int		btimer;
     degenmobj_t *soundorg;
+
+    //[CALAMITY] Current texture pos
+    int currenttexture;
+
+    //[CALAMITY] First texture pos
+    int firsttexture;
+
+    //[CALAMITY] Last texture pos
+    int lasttexture;
+    int index;
+    int tics;
+
 
 } button_t;
 

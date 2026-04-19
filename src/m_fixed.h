@@ -35,6 +35,7 @@ typedef int fixed_t;
 fixed_t FixedMul	(fixed_t a, fixed_t b);
 fixed_t FixedDiv	(fixed_t a, fixed_t b);
 
-
+fixed_t Lerp(fixed_t a, fixed_t b, fixed_t t);
+fixed_t Quad(fixed_t t);
 
 #endif

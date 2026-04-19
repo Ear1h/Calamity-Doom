@@ -24,6 +24,7 @@
 #include "i_system.h"
 
 #include "m_fixed.h"
+#include "math.h"
 
 
 
@@ -58,5 +59,15 @@ fixed_t FixedDiv(fixed_t a, fixed_t b)
 
 	return (fixed_t) result;
     }
+}
+
+fixed_t Lerp(fixed_t a, fixed_t b, fixed_t t)
+{
+    return (fixed_t) a + FixedMul((a - b), t);
+}
+
+fixed_t Quad(fixed_t t)
+{
+    return FixedMul(t, t);
 }
 

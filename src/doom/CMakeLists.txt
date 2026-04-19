@@ -35,6 +35,8 @@ add_library(doom STATIC
             m_crispy.c      m_crispy.h
             m_menu.c        m_menu.h
             m_random.c      m_random.h
+            p_animdefs.c    p_animdefs.h
+            p_anim.c        p_anim.h
             p_bexptr.c
             p_blockmap.c
             p_ceilng.c
